@@ -41,7 +41,7 @@ const catalog = {
             {
                 id: 'ai_template',
                 name: 'Illustrator Source File',
-                description: 'Professional AI template for your projects.',
+                description: 'Professional Illustrator template for your projects.',
                 url: 'https://drive.google.com/drive/folders/1LbU-SPy5mM-ObqAAZgq9R5iupRsfgGIW?usp=sharing'
             }
         ]
