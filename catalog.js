@@ -27,7 +27,7 @@ const catalog = {
                 id: 'ai_template',
                 name: '.ai Source File',
                 description: 'Professional AI template for your projects.',
-                url: 'https://drive.google.com/YOUR_FILE_LINK_3'
+                url: 'https://drive.google.com/drive/folders/1LbU-SPy5mM-ObqAAZgq9R5iupRsfgGIW?usp=sharing'
             }
         ]
     }
