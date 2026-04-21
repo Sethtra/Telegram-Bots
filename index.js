@@ -1,15 +1,17 @@
 const { Telegraf, Markup } = require('telegraf');
 const express = require('express');
-const { Redis } = require('@upstash/redis');
+const { createClient } = require('redis');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 const catalog = require('./catalog');
 
-// 1. Initialize Redis (Upstash)
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+// 1. Initialize Redis (Standard Protocol)
+const redis = createClient({
+    url: process.env.REDIS_URL
 });
+
+redis.on('error', (err) => console.log('Redis Client Error', err));
+redis.connect().then(() => console.log('Connected to Upstash Redis'));
 
 // 2. Initialize Bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -83,7 +85,7 @@ bot.action(/^link_(.+)_(.+)$/, async (ctx) => {
     const token = uuidv4();
     
     // B. Store in Redis with 5-minute expiry (300 seconds)
-    await redis.set(token, item.url, { ex: 300 });
+    await redis.set(token, item.url, { EX: 300 });
 
     // C. Construct the Bouncer URL
     const bouncerUrl = `${process.env.BASE_URL}/dl/${token}`;
@@ -97,7 +99,7 @@ bot.action(/^link_(.+)_(.+)$/, async (ctx) => {
         ])
     );
 
-    // Auto-delete message from Telegram after 5 mins (Bonus UI/UX)
+    // Auto-delete message from Telegram after 5 mins
     setTimeout(() => {
         ctx.telegram.deleteMessage(ctx.chat.id, sentMessage.message_id).catch(() => {});
     }, 300000);
@@ -112,22 +114,17 @@ bot.action('main_menu', async (ctx) => {
 
 // --- EXPRESS REDIRECTOR LOGIC ---
 
-// Health check for Cron-job.org / Render
 app.get('/health', (req, res) => res.send('Bot is Alive!'));
 
-// The actual Bouncer route
 app.get('/dl/:token', async (req, res) => {
     const { token } = req.params;
     
-    // 1. Fetch real URL from Redis
     const realUrl = await redis.get(token);
 
     if (realUrl) {
-        // 2. Redirect to Google Drive
         console.log(`[Bouncer] Redirecting token ${token} to file.`);
         res.redirect(realUrl);
     } else {
-        // 3. Expired or invalid
         res.status(410).send(
             '<h1>⚠️ Link Expired</h1>' +
             '<p>This download link has expired. Please go back to the Telegram bot and generate a fresh one.</p>'
@@ -135,13 +132,11 @@ app.get('/dl/:token', async (req, res) => {
     }
 });
 
-// 4. Start the Engines
 app.listen(PORT, () => {
     console.log(`Bouncer Server running on port ${PORT}`);
 });
 
 bot.launch().then(() => console.log('Telegram Bot is running...'));
 
-// Graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
