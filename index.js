@@ -64,12 +64,18 @@ bot.action(/^item_(.+?)_(.+)$/, async (ctx) => {
     if (!item) return ctx.answerCbQuery('Item not found!');
 
     await ctx.editMessageText(
-        `<b>📦 ${item.name}</b>\n\n${item.description}\n\n` +
-        `⚠️ <i>The generated link will be unique and valid for 5 minutes only.</i>`,
-        Markup.inlineKeyboard([
-            [Markup.button.callback('🚀 Generate Fresh Link', `link_${categoryKey}_${itemId}`)],
-            [Markup.button.callback('⬅️ Back', `cat_${categoryKey}`)]
-        ])
+        `<b>━━━━━━━━━━━━━━━━━━</b>\n` +
+        `<b>📦 ${item.name}</b>\n` +
+        `<b>━━━━━━━━━━━━━━━━━━</b>\n\n` +
+        `${item.description}\n\n` +
+        `⚠️ <i>Note: This link will expire in 5 minutes.</i>`,
+        {
+            parse_mode: 'HTML',
+            ...Markup.inlineKeyboard([
+                [Markup.button.callback('🚀 Generate Fresh Link', `link_${categoryKey}_${itemId}`)],
+                [Markup.button.callback('⬅️ Back to List', `cat_${categoryKey}`)]
+            ])
+        }
     );
 });
 
@@ -91,11 +97,14 @@ bot.action(/^link_(.+?)_(.+)$/, async (ctx) => {
     const bouncerUrl = `${process.env.BASE_URL}/dl/${token}`;
 
     const sentMessage = await ctx.replyWithHTML(
-        `<b>✅ Link Generated!</b>\n\n` +
-        `<code>${item.name}</code>\n\n` +
-        `This link is unique to you and expires in <b>5 minutes</b>.`,
+        `<b>✅ Access Granted!</b>\n` +
+        `━━━━━━━━━━━━━━\n` +
+        `📁 <code>${item.name}</code>\n` +
+        `⏱ <b>Expires:</b> 5 Minutes\n` +
+        `━━━━━━━━━━━━━━\n\n` +
+        `<i>Click below to open your file:</i>`,
         Markup.inlineKeyboard([
-            [Markup.button.url('⬇️ Download Now', bouncerUrl)]
+            [Markup.button.url('⬇️ Download / Watch Now', bouncerUrl)]
         ])
     );
 
