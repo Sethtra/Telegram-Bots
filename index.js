@@ -57,7 +57,7 @@ bot.action(/^cat_(.+)$/, async (ctx) => {
     });
 });
 
-bot.action(/^item_(.+)_(.+)$/, async (ctx) => {
+bot.action(/^item_(.+?)_(.+)$/, async (ctx) => {
     const categoryKey = ctx.match[1];
     const itemId = ctx.match[2];
     const item = catalog[categoryKey]?.items.find(i => i.id === itemId);
@@ -73,7 +73,7 @@ bot.action(/^item_(.+)_(.+)$/, async (ctx) => {
     );
 });
 
-bot.action(/^link_(.+)_(.+)$/, async (ctx) => {
+bot.action(/^link_(.+?)_(.+)$/, async (ctx) => {
     const categoryKey = ctx.match[1];
     const itemId = ctx.match[2];
     const item = catalog[categoryKey]?.items.find(i => i.id === itemId);
