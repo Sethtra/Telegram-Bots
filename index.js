@@ -36,7 +36,7 @@ bot.action(/^cat_(.+?)$/, async (ctx) => {
     if (!cat) return ctx.answerCbQuery('Category not found!');
 
     let buttons = [];
-    
+
     // A. Add Subcategories (if any)
     if (cat.subcategories) {
         Object.keys(cat.subcategories).forEach(subId => {
@@ -81,15 +81,18 @@ bot.action(/^sub_(.+?)_(.+?)$/, async (ctx) => {
 bot.action(/^item_(p|s)_(.+?)$/, async (ctx) => {
     const type = ctx.match[1];
     const parts = ctx.match[2].split('_');
-    
+
     let catId, subId, itemId, item, backAction;
 
     if (type === 'p') {
-        [catId, itemId] = parts;
+        catId = parts[0];
+        itemId = parts.slice(1).join('_'); // Join back everything after the first part
         item = catalog[catId]?.items.find(i => i.id === itemId);
         backAction = `cat_${catId}`;
     } else {
-        [catId, subId, itemId] = parts;
+        catId = parts[0];
+        subId = parts[1];
+        itemId = parts.slice(2).join('_'); // Join back everything after the second part
         item = catalog[catId]?.subcategories?.[subId]?.items.find(i => i.id === itemId);
         backAction = `sub_${catId}_${subId}`;
     }
@@ -97,7 +100,7 @@ bot.action(/^item_(p|s)_(.+?)$/, async (ctx) => {
     if (!item) return ctx.answerCbQuery('Item not found!');
 
     await ctx.editMessageText(
-        uiHeader(`📦 ${item.name}`) + `${item.description}\n\n⚠️ <i>Note: This link will expire in 5 minutes.</i>`,
+        uiHeader(`📦 ${item.name}`) + `${item.description}\n\n⚠️ <i>Note: This link will expire in 5 minutes. This File or Viedo is not mine use it with your own risk.</i>`,
         {
             parse_mode: 'HTML',
             ...Markup.inlineKeyboard([
@@ -115,10 +118,13 @@ bot.action(/^link_(p|s)_(.+?)$/, async (ctx) => {
     let item;
 
     if (type === 'p') {
-        const [catId, itemId] = parts;
+        const catId = parts[0];
+        const itemId = parts.slice(1).join('_');
         item = catalog[catId]?.items.find(i => i.id === itemId);
     } else {
-        const [catId, subId, itemId] = parts;
+        const catId = parts[0];
+        const subId = parts[1];
+        const itemId = parts.slice(2).join('_');
         item = catalog[catId]?.subcategories?.[subId]?.items.find(i => i.id === itemId);
     }
 
@@ -140,7 +146,7 @@ bot.action(/^link_(p|s)_(.+?)$/, async (ctx) => {
     );
 
     setTimeout(() => {
-        ctx.telegram.deleteMessage(ctx.chat.id, sentMessage.message_id).catch(() => {});
+        ctx.telegram.deleteMessage(ctx.chat.id, sentMessage.message_id).catch(() => { });
     }, 300000);
 });
 
